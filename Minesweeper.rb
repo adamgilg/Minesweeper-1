@@ -2,6 +2,7 @@ require 'yaml'
 
 class Minesweeper
   def initialize
+  #AG: interesting way of structuring your initialize
     load_game? ? load_game : setup_board
   end
 
@@ -36,6 +37,7 @@ class Minesweeper
   def setup_board
     print "How many rows/cols would you like the board to have? "
     size = gets.chomp.to_i
+    #AG: Nice! Allowing for any board size. I like it.
     @board = create_board(size)
     populate_bombs((size * size) / 7)
   end
@@ -54,7 +56,8 @@ class Minesweeper
       pos = [rand(@board.length), rand(@board.length)]
       bombs << pos unless bombs.include?(pos)
     end
-
+#AG: We were considering an array of arrays (for bombs), but Ned suggested using a separate board position class
+#AG: that stores all your info. This ended up working our really well.
     bombs.each { |(x,y)| @board[x][y][:bomb] = true }
   end
 
@@ -90,15 +93,19 @@ class Minesweeper
       f.puts @board.to_yaml
     end
   end
-
+#AG: We definitely had too many classes, but I think you could benefit from breaking this into separate
+#AG: classes such as Board (above) and Game (or something) - as it stands your class is very long.
   ### Play Methods
   def get_guess
     guess = [@board.length + 10, @board.length + 10]
     while true
       print "Enter your move in this format : 'r/f row col' (ex: 'r 3 4'): "
+      #AG: Split will split on whitespace by default - don't need the (' ')
       input = gets.chomp.downcase.split(' ')
       type = input[0]
       break if type == 'save'
+      #AG: Your get_guess method is doing a lot more than just getting the guess. Perhaps consider
+      #AG: a get_guess and process_guess or something (although you do have a separate valid_guess?)
       guess = [input[1].to_i - 1, input[2].to_i - 1]
       if valid_guess?(guess) && type.match(/^[rf]/)
         break
@@ -126,7 +133,7 @@ class Minesweeper
       end
     end
   end
-
+#AG: I like all these short and single-purpose methods.
   def adjacent_bomb_count(pos)
     count = 0
     find_neighbors(pos).each { |neighbor| count += 1 if is_bomb?(neighbor) }
@@ -135,6 +142,8 @@ class Minesweeper
 
   def find_neighbors(pos)
     x, y = pos
+    #AG: We did this by iterating through our neighbors (or ADJACENTS) and adding these to their row and column
+    #AG: A few more lines of code, but I think it ended up being a little more readable.
     neighbors = [ [x - 1, y + 1], [x, y + 1], [x + 1, y + 1],
                   [x - 1, y], [x + 1, y],
                   [x - 1, y - 1], [x, y - 1], [x + 1, y - 1] ]
